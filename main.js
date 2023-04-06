@@ -6,9 +6,10 @@ import { ARButton } from "three/addons/webxr/ARButton.js";
 let container;
 let camera, scene, renderer;
 let controller;
-let reticle;
+let reticle, dot;
 let hitTestSource = null;
 let hitTestSourceRequested = false;
+let dotPositions = [];
 
 // Call the initialization and animation functions
 init();
@@ -48,10 +49,6 @@ function init() {
 		ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
 	);
 
-	// Define the onSelect() function for the controller
-
-	// Get the controller and add the onSelect() function to it
-
 	// Create a reticle and add it to the scene
 	reticle = new THREE.Mesh(
 		new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
@@ -62,15 +59,34 @@ function init() {
 	scene.add(reticle);
 
 	// Create the dot
-	const dotGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+	const dotGeometry = new THREE.SphereGeometry(0.02, 16, 16);
 	const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-	const dot = new THREE.Mesh(dotGeometry, dotMaterial);
-
-	// Position the dot at the center of the reticle
+	dot = new THREE.Mesh(dotGeometry, dotMaterial);
 	dot.position.set(0, 0, 0);
-
-	// Add the dot to the reticle
 	reticle.add(dot);
+
+	function onSelect() {
+		if (reticle.visible) {
+			const hitDot = new THREE.Mesh(dotGeometry, dotMaterial);
+			reticle.matrix.decompose(
+				hitDot.position,
+				hitDot.quaternion,
+				hitDot.scale
+			);
+			scene.add(hitDot);
+
+			dotPositions.push(hitDot.position.clone());
+			const distance = dotPositions[0].distanceTo(
+				dotPositions[dotPositions.length - 1]
+			);
+
+			console.log(distance);
+		}
+	}
+
+	controller = renderer.xr.getController(0);
+	controller.addEventListener("select", onSelect);
+	scene.add(controller);
 
 	// Add an event listener for window resize
 	window.addEventListener("resize", onWindowResize);
