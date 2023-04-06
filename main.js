@@ -48,31 +48,9 @@ function init() {
 		ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
 	);
 
-	// Create a cylinder geometry for the 3D object
-	const geometry = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 32).translate(
-		0,
-		0.1,
-		0
-	);
-
 	// Define the onSelect() function for the controller
-	function onSelect() {
-		// If the reticle is visible, create a new mesh and add it to the scene
-		if (reticle.visible) {
-			const material = new THREE.MeshPhongMaterial({
-				color: 0xffffff * Math.random(),
-			});
-			const mesh = new THREE.Mesh(geometry, material);
-			reticle.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
-			mesh.scale.y = Math.random() * 2 + 1;
-			scene.add(mesh);
-		}
-	}
 
 	// Get the controller and add the onSelect() function to it
-	controller = renderer.xr.getController(0);
-	controller.addEventListener("select", onSelect);
-	scene.add(controller);
 
 	// Create a reticle and add it to the scene
 	reticle = new THREE.Mesh(
@@ -82,6 +60,17 @@ function init() {
 	reticle.matrixAutoUpdate = false;
 	reticle.visible = false;
 	scene.add(reticle);
+
+	// Create the dot
+	const dotGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+	const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+	const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+
+	// Position the dot at the center of the reticle
+	dot.position.set(0, 0, 0);
+
+	// Add the dot to the reticle
+	reticle.add(dot);
 
 	// Add an event listener for window resize
 	window.addEventListener("resize", onWindowResize);
