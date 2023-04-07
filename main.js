@@ -59,11 +59,34 @@ function init() {
 	scene.add(reticle);
 
 	// Create the dot
-	const dotGeometry = new THREE.SphereGeometry(0.02, 16, 16);
+	const dotGeometry = new THREE.SphereGeometry(0.005, 16, 16);
 	const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 	dot = new THREE.Mesh(dotGeometry, dotMaterial);
 	dot.position.set(0, 0, 0);
 	reticle.add(dot);
+
+	// Function to create a text sprite
+	function createTextSprite(message, fontColor) {
+		const canvas = document.createElement("canvas");
+		const context = canvas.getContext("2d");
+		context.font = "bold 20px Arial"; // Change the font size here
+		context.fillStyle = fontColor;
+		context.fillText(message, 0, 20);
+
+		const texture = new THREE.CanvasTexture(canvas);
+		const spriteMaterial = new THREE.SpriteMaterial({
+			map: texture,
+			transparent: true,
+		});
+		const sprite = new THREE.Sprite(spriteMaterial);
+		sprite.scale.set(0.01 * canvas.width, 0.01 * canvas.height, 1);
+
+		return sprite;
+	}
+
+	// Create a text sprite for the distance and add it to the scene
+	const distanceTextSprite = createTextSprite("", "white");
+	scene.add(distanceTextSprite);
 
 	function onSelect() {
 		if (reticle.visible) {
@@ -77,6 +100,8 @@ function init() {
 
 			dotPositions.push(hitDot.position.clone());
 
+			let distance = 0;
+
 			if (dotPositions.length >= 2) {
 				// Create the line
 				const lineGeometry = new THREE.BufferGeometry().setFromPoints(
@@ -89,11 +114,35 @@ function init() {
 				});
 				const line = new THREE.Line(lineGeometry, lineMaterial);
 				scene.add(line);
-			}
 
-			const distance = dotPositions[0].distanceTo(
-				dotPositions[dotPositions.length - 1]
-			);
+				distance = dotPositions[dotPositions.length - 2].distanceTo(
+					dotPositions[dotPositions.length - 1]
+				);
+
+				// Calculate the distance in centimeters
+				const distanceCM = (distance * 100).toFixed(2);
+				// Update the text sprite content
+				scene.remove(distanceTextSprite);
+				distanceTextSprite.material.map.dispose();
+				distanceTextSprite.material.dispose();
+				const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
+				newTextSprite.position
+					.copy(dotPositions[dotPositions.length - 1])
+					.add(new THREE.Vector3(0.05, 0.05, 0));
+
+				// Scale the text sprite based on the distance from the camera
+				const cameraDistance = camera.position.distanceTo(
+					newTextSprite.position
+				);
+				const scale = 0.001 * cameraDistance;
+				newTextSprite.scale.set(
+					scale * newTextSprite.material.map.image.width,
+					scale * newTextSprite.material.map.image.height,
+					1
+				);
+
+				scene.add(newTextSprite);
+			}
 
 			console.log(distance);
 		}
