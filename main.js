@@ -76,6 +76,21 @@ function init() {
 			scene.add(hitDot);
 
 			dotPositions.push(hitDot.position.clone());
+
+			if (dotPositions.length >= 2) {
+				// Create the line
+				const lineGeometry = new THREE.BufferGeometry().setFromPoints(
+					dotPositions
+				);
+				const lineMaterial = new THREE.LineBasicMaterial({
+					color: 0xffffff,
+					linewidth: 5,
+					linecap: "round",
+				});
+				const line = new THREE.Line(lineGeometry, lineMaterial);
+				scene.add(line);
+			}
+
 			const distance = dotPositions[0].distanceTo(
 				dotPositions[dotPositions.length - 1]
 			);
