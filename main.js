@@ -10,6 +10,8 @@ let reticle, dot;
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 let dotPositions = [];
+let width = 0;
+let height = 0;
 
 // Call the initialization and animation functions
 init();
@@ -140,6 +142,16 @@ function init() {
 					scale * newTextSprite.material.map.image.height,
 					1
 				);
+
+				if (dotPositions.length % 2 == 0) {
+					width = distance;
+				} else {
+					height = distance;
+				}
+				if (width !== 0 && height !== 0) {
+					const areaCM = (width * height * 10000).toFixed(2);
+					console.log(`Area: ${areaCM} cm²`);
+				}
 
 				scene.add(newTextSprite);
 			}
