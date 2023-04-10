@@ -1,6 +1,7 @@
 // Import the necessary modules
 import * as THREE from "three";
 import { ARButton } from "three/addons/webxr/ARButton.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 // Define the global variables
 let container;
@@ -90,6 +91,30 @@ function init() {
 	const distanceTextSprite = createTextSprite("", "white");
 	scene.add(distanceTextSprite);
 
+	// Models
+
+	function loadModel(width, height, position) {
+		const loader = new GLTFLoader();
+		console.log(loader);
+
+		loader.load("static/models/Box/glTF/Box.gltf", (gltf) => {
+			const model = gltf.scene;
+
+			// Scale the model based on the width and height
+			const scale = Math.min(width, height);
+			model.scale.set(scale, scale, scale);
+
+			// Set the model's position
+			model.position.copy(position);
+
+			// // Set the model's position (optional)
+			// model.position.set(0, 0, 0);
+
+			// Add the model to the scene
+			scene.add(model);
+		});
+	}
+
 	function onSelect() {
 		if (reticle.visible) {
 			const hitDot = new THREE.Mesh(dotGeometry, dotMaterial);
@@ -121,9 +146,9 @@ function init() {
 					dotPositions[dotPositions.length - 1]
 				);
 
-				// Calculate the distance in centimeters
+				// // Calculate the distance in centimeters
 				// const distanceCM = (distance * 100).toFixed(2);
-				// Update the text sprite content
+				// // Update the text sprite content
 				// scene.remove(distanceTextSprite);
 				// distanceTextSprite.material.map.dispose();
 				// distanceTextSprite.material.dispose();
@@ -132,7 +157,7 @@ function init() {
 				// 	.copy(dotPositions[dotPositions.length - 1])
 				// 	.add(new THREE.Vector3(0.05, 0.05, 0));
 
-				// // Scale the text sprite based on the distance from the camera
+				// // // Scale the text sprite based on the distance from the camera
 				// const cameraDistance = camera.position.distanceTo(
 				// 	newTextSprite.position
 				// );
@@ -143,17 +168,28 @@ function init() {
 				// 	1
 				// );
 
-				if (dotPositions.length % 2 == 0) {
-					width = distance;
-				} else {
-					height = distance;
-				}
-				if (width !== 0 && height !== 0) {
-					const areaM2 = (width * height).toFixed(2);
-					console.log(`Area: ${areaM2} m²`);
-				}
+				// if (dotPositions.length % 2 == 0) {
+				// 	width = distance;
+				// } else {
+				// 	height = distance;
+				// }
+				// if (width !== 0 && height !== 0) {
+				// 	const areaM2 = (width * height).toFixed(2);
+				// 	console.log(`Area: ${areaM2} m²`);
+				// }
 
 				// scene.add(newTextSprite);
+			}
+
+			if (dotPositions.length === 3) {
+				// Two distances measured (width and height)
+				const width = dotPositions[0].distanceTo(dotPositions[1]);
+				const height = dotPositions[1].distanceTo(dotPositions[2]);
+
+				const modelPosition = new THREE.Vector3()
+					.addVectors(dotPositions[0], dotPositions[2])
+					.multiplyScalar(0.5);
+				loadModel(width, height, modelPosition);
 			}
 
 			console.log(distance);
