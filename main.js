@@ -122,26 +122,26 @@ function init() {
 				);
 
 				// Calculate the distance in centimeters
-				const distanceCM = (distance * 100).toFixed(2);
+				// const distanceCM = (distance * 100).toFixed(2);
 				// Update the text sprite content
-				scene.remove(distanceTextSprite);
-				distanceTextSprite.material.map.dispose();
-				distanceTextSprite.material.dispose();
-				const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
-				newTextSprite.position
-					.copy(dotPositions[dotPositions.length - 1])
-					.add(new THREE.Vector3(0.05, 0.05, 0));
+				// scene.remove(distanceTextSprite);
+				// distanceTextSprite.material.map.dispose();
+				// distanceTextSprite.material.dispose();
+				// const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
+				// newTextSprite.position
+				// 	.copy(dotPositions[dotPositions.length - 1])
+				// 	.add(new THREE.Vector3(0.05, 0.05, 0));
 
-				// Scale the text sprite based on the distance from the camera
-				const cameraDistance = camera.position.distanceTo(
-					newTextSprite.position
-				);
-				const scale = 0.001 * cameraDistance;
-				newTextSprite.scale.set(
-					scale * newTextSprite.material.map.image.width,
-					scale * newTextSprite.material.map.image.height,
-					1
-				);
+				// // Scale the text sprite based on the distance from the camera
+				// const cameraDistance = camera.position.distanceTo(
+				// 	newTextSprite.position
+				// );
+				// const scale = 0.001 * cameraDistance;
+				// newTextSprite.scale.set(
+				// 	scale * newTextSprite.material.map.image.width,
+				// 	scale * newTextSprite.material.map.image.height,
+				// 	1
+				// );
 
 				if (dotPositions.length % 2 == 0) {
 					width = distance;
@@ -149,11 +149,11 @@ function init() {
 					height = distance;
 				}
 				if (width !== 0 && height !== 0) {
-					const areaCM = (width * height * 10000).toFixed(2);
-					console.log(`Area: ${areaCM} cm²`);
+					const areaM2 = (width * height).toFixed(2);
+					console.log(`Area: ${areaM2} m²`);
 				}
 
-				scene.add(newTextSprite);
+				// scene.add(newTextSprite);
 			}
 
 			console.log(distance);
