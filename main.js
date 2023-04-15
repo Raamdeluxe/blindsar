@@ -93,7 +93,7 @@ function init() {
 
 	// Models
 
-	function loadModel(width, height, position) {
+	function loadModel(width, height, position, price) {
 		const loader = new GLTFLoader();
 		console.log(loader);
 
@@ -110,9 +110,48 @@ function init() {
 			// // Set the model's position (optional)
 			// model.position.set(0, 0, 0);
 
+			// Create a text sprite for the price
+			const priceTextSprite = createTextSprite(`€${price}`, "white");
+
+			// Set the position of the price text sprite to be at the center of the model
+			priceTextSprite.position.set(0, 0, 0);
+
+			// Add the price text sprite as a child of the model
+			model.add(priceTextSprite);
+
 			// Add the model to the scene
 			scene.add(model);
 		});
+	}
+
+	async function fetchPrice(roundedWidth, roundedHeight) {
+		try {
+			const response = await fetch("price.json");
+			const priceData = await response.json();
+
+			const widthKey = roundedWidth.toString();
+			const heightKey = roundedHeight.toString();
+
+			if (priceData[widthKey] && priceData[widthKey][heightKey]) {
+				const price = priceData[widthKey][heightKey];
+				console.log(`Price: €${price}`);
+				// Call loadModel with the price
+				if (dotPositions.length === 3) {
+					// Two distances measured (width and height)
+					const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
+					const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
+
+					const modelPosition = new THREE.Vector3()
+						.addVectors(dotPositions[0], dotPositions[2])
+						.multiplyScalar(0.5);
+					loadModel(width, height, modelPosition, price);
+				}
+			} else {
+				console.log("Width or height not found in the price data");
+			}
+		} catch (error) {
+			console.error("Error fetching price data:", error);
+		}
 	}
 
 	function onSelect() {
@@ -146,53 +185,65 @@ function init() {
 					dotPositions[dotPositions.length - 1]
 				);
 
-				// // Calculate the distance in centimeters
-				// const distanceCM = (distance * 100).toFixed(2);
-				// // Update the text sprite content
-				// scene.remove(distanceTextSprite);
-				// distanceTextSprite.material.map.dispose();
-				// distanceTextSprite.material.dispose();
-				// const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
-				// newTextSprite.position
-				// 	.copy(dotPositions[dotPositions.length - 1])
-				// 	.add(new THREE.Vector3(0.05, 0.05, 0));
+				// Calculate the distance in centimeters
+				const distanceCM = (distance * 100).toFixed(2);
 
-				// // // Scale the text sprite based on the distance from the camera
-				// const cameraDistance = camera.position.distanceTo(
-				// 	newTextSprite.position
-				// );
-				// const scale = 0.001 * cameraDistance;
-				// newTextSprite.scale.set(
-				// 	scale * newTextSprite.material.map.image.width,
-				// 	scale * newTextSprite.material.map.image.height,
-				// 	1
-				// );
+				// Round the distance upwards in tens
+				const roundedDistanceCM = Math.ceil(distanceCM / 10) * 10;
 
-				// if (dotPositions.length % 2 == 0) {
-				// 	width = distance;
-				// } else {
-				// 	height = distance;
-				// }
-				// if (width !== 0 && height !== 0) {
-				// 	const areaM2 = (width * height).toFixed(2);
-				// 	console.log(`Area: ${areaM2} m²`);
-				// }
+				// Update the text sprite content
+				scene.remove(distanceTextSprite);
+				distanceTextSprite.material.map.dispose();
+				distanceTextSprite.material.dispose();
+				const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
+				newTextSprite.position
+					.copy(dotPositions[dotPositions.length - 1])
+					.add(new THREE.Vector3(0.05, 0.05, 0));
 
-				// scene.add(newTextSprite);
+				// Scale the text sprite based on the distance from the camera
+				const cameraDistance = camera.position.distanceTo(
+					newTextSprite.position
+				);
+				const scale = 0.001 * cameraDistance;
+				newTextSprite.scale.set(
+					scale * newTextSprite.material.map.image.width,
+					scale * newTextSprite.material.map.image.height,
+					1
+				);
+
+				if (dotPositions.length % 2 == 0) {
+					width = distance;
+				} else {
+					height = distance;
+				}
+				if (width !== 0 && height !== 0) {
+					const areaM2 = (width * height).toFixed(2);
+					console.log(`Area: ${areaM2} m²`);
+
+					// Round the width and height upwards in tens
+					const roundedWidthCM = Math.ceil((width * 100) / 10) * 10;
+					const roundedHeightCM = Math.ceil((height * 100) / 10) * 10;
+
+					// Fetch the price
+					fetchPrice(roundedWidthCM, roundedHeightCM);
+				}
+
+				scene.add(newTextSprite);
+
+				// Log the rounded distance in centimeters
+				console.log(roundedDistanceCM);
 			}
 
+			// Remove the duplicate call to 'loadModel' as it's already being called inside 'fetchPrice'
 			if (dotPositions.length === 3) {
 				// Two distances measured (width and height)
-				const width = dotPositions[0].distanceTo(dotPositions[1]);
-				const height = dotPositions[1].distanceTo(dotPositions[2]);
+				const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
+				const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
 
 				const modelPosition = new THREE.Vector3()
 					.addVectors(dotPositions[0], dotPositions[2])
 					.multiplyScalar(0.5);
-				loadModel(width, height, modelPosition);
 			}
-
-			console.log(distance);
 		}
 	}
 
