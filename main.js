@@ -97,31 +97,34 @@ function init() {
 		const loader = new GLTFLoader();
 		console.log(loader);
 
-		loader.load("static/models/Box/glTF/Box.gltf", (gltf) => {
-			const model = gltf.scene;
+		loader.load(
+			"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/static/models/Box/glTF/Box.gltf",
+			(gltf) => {
+				const model = gltf.scene;
 
-			// Scale the model based on the width and height
-			const scale = Math.min(width, height);
-			model.scale.set(scale, scale, scale);
+				// Scale the model based on the width and height
+				const scale = Math.min(width, height);
+				model.scale.set(scale, scale, scale);
 
-			// Set the model's position
-			model.position.copy(position);
+				// Set the model's position
+				model.position.copy(position);
 
-			// // Set the model's position (optional)
-			// model.position.set(0, 0, 0);
+				// // Set the model's position (optional)
+				// model.position.set(0, 0, 0);
 
-			// Create a text sprite for the price
-			const priceTextSprite = createTextSprite(`€${price}`, "white");
+				// Create a text sprite for the price
+				const priceTextSprite = createTextSprite(`€${price}`, "white");
 
-			// Set the position of the price text sprite to be at the center of the model
-			priceTextSprite.position.set(0, 0, 0);
+				// Set the position of the price text sprite to be at the center of the model
+				priceTextSprite.position.set(0, 0, 0);
 
-			// Add the price text sprite as a child of the model
-			model.add(priceTextSprite);
+				// Add the price text sprite as a child of the model
+				model.add(priceTextSprite);
 
-			// Add the model to the scene
-			scene.add(model);
-		});
+				// Add the model to the scene
+				scene.add(model);
+			}
+		);
 	}
 
 	async function fetchPrice(roundedWidth, roundedHeight) {
