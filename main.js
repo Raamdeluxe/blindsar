@@ -126,7 +126,9 @@ function init() {
 
 	async function fetchPrice(roundedWidth, roundedHeight) {
 		try {
-			const response = await fetch("price.json");
+			const response = await fetch(
+				"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/price.json"
+			);
 			const priceData = await response.json();
 
 			const widthKey = roundedWidth.toString();
