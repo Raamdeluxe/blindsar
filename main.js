@@ -96,42 +96,45 @@ function init() {
 	function loadModel(width, height, position, price) {
 		const loader = new GLTFLoader();
 
-		loader.load("static/models/window_blinds/scene.gltf", (gltf) => {
-			const model = gltf.scene;
+		loader.load(
+			"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/static/models/window_blinds/scene.gltf",
+			(gltf) => {
+				const model = gltf.scene;
 
-			// Calculate the scale factor based on the width and height
-			const modelBoundingBox = new THREE.Box3().setFromObject(model);
-			const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
-			const scaleX = width / modelSize.x;
-			const scaleY = height / modelSize.y;
-			const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
+				// Calculate the scale factor based on the width and height
+				const modelBoundingBox = new THREE.Box3().setFromObject(model);
+				const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
+				const scaleX = width / modelSize.x;
+				const scaleY = height / modelSize.y;
+				const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
 
-			// Apply the scale to the model
-			model.scale.set(scaleX, scaleY, scaleZ);
+				// Apply the scale to the model
+				model.scale.set(scaleX, scaleY, scaleZ);
 
-			// Calculate the model's bounding box center
-			const modelCenter = new THREE.Vector3();
-			modelBoundingBox.getCenter(modelCenter);
+				// Calculate the model's bounding box center
+				const modelCenter = new THREE.Vector3();
+				modelBoundingBox.getCenter(modelCenter);
 
-			// Scale the model's center according to the applied scale
-			modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
+				// Scale the model's center according to the applied scale
+				modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
 
-			// Move the model's center to the position
-			const modelPosition = position.clone().sub(modelCenter);
-			model.position.copy(modelPosition);
+				// Move the model's center to the position
+				const modelPosition = position.clone().sub(modelCenter);
+				model.position.copy(modelPosition);
 
-			// Create a text sprite for the price
-			const priceTextSprite = createTextSprite(`€${price}`, "white");
+				// Create a text sprite for the price
+				const priceTextSprite = createTextSprite(`€${price}`, "white");
 
-			// Set the position of the price text sprite to be at the center of the model
-			priceTextSprite.position.set(0, 0, 0);
+				// Set the position of the price text sprite to be at the center of the model
+				priceTextSprite.position.set(0, 0, 0);
 
-			// Add the price text sprite as a child of the model
-			model.add(priceTextSprite);
+				// Add the price text sprite as a child of the model
+				model.add(priceTextSprite);
 
-			// Add the model to the scene
-			scene.add(model);
-		});
+				// Add the model to the scene
+				scene.add(model);
+			}
+		);
 	}
 
 	async function fetchPrice(roundedWidth, roundedHeight) {
