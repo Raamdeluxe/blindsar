@@ -95,36 +95,43 @@ function init() {
 
 	function loadModel(width, height, position, price) {
 		const loader = new GLTFLoader();
-		console.log(loader);
 
-		loader.load(
-			"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/static/models/Box/glTF/Box.gltf",
-			(gltf) => {
-				const model = gltf.scene;
+		loader.load("static/models/window_blinds/scene.gltf", (gltf) => {
+			const model = gltf.scene;
 
-				// Scale the model based on the width and height
-				const scale = Math.min(width, height);
-				model.scale.set(scale, scale, scale);
+			// Calculate the scale factor based on the width and height
+			const modelBoundingBox = new THREE.Box3().setFromObject(model);
+			const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
+			const scaleX = width / modelSize.x;
+			const scaleY = height / modelSize.y;
+			const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
 
-				// Set the model's position
-				model.position.copy(position);
+			// Apply the scale to the model
+			model.scale.set(scaleX, scaleY, scaleZ);
 
-				// // Set the model's position (optional)
-				// model.position.set(0, 0, 0);
+			// Calculate the model's bounding box center
+			const modelCenter = new THREE.Vector3();
+			modelBoundingBox.getCenter(modelCenter);
 
-				// Create a text sprite for the price
-				const priceTextSprite = createTextSprite(`€${price}`, "white");
+			// Scale the model's center according to the applied scale
+			modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
 
-				// Set the position of the price text sprite to be at the center of the model
-				priceTextSprite.position.set(0, 0, 0);
+			// Move the model's center to the position
+			const modelPosition = position.clone().sub(modelCenter);
+			model.position.copy(modelPosition);
 
-				// Add the price text sprite as a child of the model
-				model.add(priceTextSprite);
+			// Create a text sprite for the price
+			const priceTextSprite = createTextSprite(`€${price}`, "white");
 
-				// Add the model to the scene
-				scene.add(model);
-			}
-		);
+			// Set the position of the price text sprite to be at the center of the model
+			priceTextSprite.position.set(0, 0, 0);
+
+			// Add the price text sprite as a child of the model
+			model.add(priceTextSprite);
+
+			// Add the model to the scene
+			scene.add(model);
+		});
 	}
 
 	async function fetchPrice(roundedWidth, roundedHeight) {
