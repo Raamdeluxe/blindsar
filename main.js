@@ -122,17 +122,98 @@ function init() {
 				const modelPosition = position.clone().sub(modelCenter);
 				model.position.copy(modelPosition);
 
-				// Create a text sprite for the price
-				const priceTextSprite = createTextSprite(`€${price}`, "white");
-
-				// Set the position of the price text sprite to be at the center of the model
-				priceTextSprite.position.set(0, 0, 0);
-
-				// Add the price text sprite as a child of the model
-				model.add(priceTextSprite);
-
 				// Add the model to the scene
 				scene.add(model);
+
+				// Step 1: Modify the createButton function
+				function createButton() {
+					const button = document.createElement("button");
+					button.textContent = "View Price";
+					button.style.fontSize = "40px";
+					button.style.position = "fixed";
+					button.style.bottom = "60px";
+					button.style.left = "50%";
+					button.style.transform = "translateX(-50%)";
+					button.style.padding = "60px, 30px";
+
+					button.addEventListener("click", () => {
+						createForm();
+						createButton.remove();
+					});
+
+					document.body.appendChild(button);
+				}
+
+				// Step 2: Create form element and set its properties
+				function createForm() {
+					const form = document.createElement("form");
+					form.style.position = "fixed";
+					form.style.width = "100%";
+					form.style.height = "100%";
+					form.style.display = "flex";
+					form.style.flexDirection = "column";
+					form.style.alignItems = "center";
+					form.style.justifyContent = "center";
+					form.style.gap = "10px";
+					form.style.backgroundColor = "white";
+
+					// Step 3: Create input elements for the name and email fields
+					const nameInput = document.createElement("input");
+					nameInput.type = "text";
+					nameInput.placeholder = "Name";
+					nameInput.required = false;
+					nameInput.style.width = "80%";
+					nameInput.style.padding = "5%";
+					nameInput.style.fontSize = "16%";
+
+					const emailInput = document.createElement("input");
+					emailInput.type = "email";
+					emailInput.placeholder = "Email";
+					emailInput.required = false;
+					emailInput.style.width = "80%";
+					emailInput.style.padding = "5%";
+					emailInput.style.fontSize = "16px";
+
+					// Step 4: Create a submit button for the form
+					const submitButton = document.createElement("button");
+					submitButton.type = "submit";
+					submitButton.textContent = "Submit";
+					submitButton.style.width = "80%";
+					submitButton.style.padding = "5%";
+					submitButton.style.fontSize = "16px";
+
+					// Step 5: Add event listeners to the input fields and the submit button (optional)
+					// For example, you can add validation checks and form submission handling here
+
+					// Step 6: Append the input fields and the submit button to the form element
+					form.appendChild(nameInput);
+					form.appendChild(emailInput);
+					form.appendChild(submitButton);
+
+					// Step 7: Append the form to the document body or another desired container element
+					document.body.appendChild(form);
+
+					// Step 8: Add a click event listener to the submit button
+					form.addEventListener("submit", (event) => {
+						event.preventDefault(); // Prevent default form submission behavior
+
+						// Remove the input fields and submit button
+						nameInput.remove();
+						emailInput.remove();
+						submitButton.remove();
+
+						// Display the price in the center of the form
+						const number = document.createElement("p");
+						number.textContent = `€${price}`;
+						number.style.fontSize = "54px";
+						number.style.color = "black";
+						number.style.textAlign = "center";
+						form.appendChild(number);
+					});
+				}
+
+				// Call the createButton function
+				createButton();
 			}
 		);
 	}
