@@ -129,12 +129,16 @@ function init() {
 				function createButton() {
 					const button = document.createElement("button");
 					button.textContent = "View Price";
-					button.style.fontSize = "40px";
+					button.style.fontSize = "2rem";
+					button.style.fontWeight = "bold";
+					button.style.color = "black";
 					button.style.position = "fixed";
-					button.style.bottom = "60px";
+					button.style.bottom = "12%";
 					button.style.left = "50%";
 					button.style.transform = "translateX(-50%)";
-					button.style.padding = "60px, 30px";
+					button.style.padding = "5%";
+					button.style.width = "80%";
+					button.style.backgroundColor = "white";
 
 					button.addEventListener("click", () => {
 						createForm();
@@ -148,8 +152,8 @@ function init() {
 				function createForm() {
 					const form = document.createElement("form");
 					form.style.position = "fixed";
-					form.style.width = "100%";
-					form.style.height = "100%";
+					form.style.width = "100vw";
+					form.style.height = "100vh";
 					form.style.display = "flex";
 					form.style.flexDirection = "column";
 					form.style.alignItems = "center";
@@ -164,7 +168,7 @@ function init() {
 					nameInput.required = false;
 					nameInput.style.width = "80%";
 					nameInput.style.padding = "5%";
-					nameInput.style.fontSize = "16%";
+					nameInput.style.fontSize = "2em";
 
 					const emailInput = document.createElement("input");
 					emailInput.type = "email";
@@ -172,15 +176,17 @@ function init() {
 					emailInput.required = false;
 					emailInput.style.width = "80%";
 					emailInput.style.padding = "5%";
-					emailInput.style.fontSize = "16px";
+					emailInput.style.fontSize = "2em";
 
 					// Step 4: Create a submit button for the form
 					const submitButton = document.createElement("button");
 					submitButton.type = "submit";
 					submitButton.textContent = "Submit";
+					submitButton.style.color = "white";
 					submitButton.style.width = "80%";
 					submitButton.style.padding = "5%";
-					submitButton.style.fontSize = "16px";
+					submitButton.style.fontSize = "2em";
+					submitButton.style.backgroundColor = "black";
 
 					// Step 5: Add event listeners to the input fields and the submit button (optional)
 					// For example, you can add validation checks and form submission handling here
