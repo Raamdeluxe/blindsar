@@ -1,0 +1,61 @@
+/* Add box-sizing: border-box; to all elements */
+* {
+	box-sizing: border-box;
+}
+
+/* Position the button at the bottom center of the page */
+.price-button {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 10px 20px;
+	font-size: 18px;
+	font-weight: bold;
+	color: white;
+	background-color: gray;
+}
+
+/* Center the form in the viewport */
+.price-form {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	padding: 20px;
+	background-color: white;
+	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+	width: 80%; /* Adjust the width of form as per requirement */
+	max-width: 500px; /* Optional: Set a maximum width for larger screens */
+}
+
+/* Style the form input fields */
+.price-form input {
+	display: block;
+	width: 100%;
+	margin-bottom: 10px;
+	padding: 10px;
+	font-size: 16px;
+}
+
+/* Style the form submit button */
+.price-form-submit-button {
+	display: block;
+	width: 100%;
+	padding: 10px;
+	font-size: 18px;
+	background-color: gray;
+}
+
+/* Style the price information paragraph */
+.price-display {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 3em;
+	font-weight: bold;
+	color: white;
+	text-align: center;
+	width: 100%;
+}

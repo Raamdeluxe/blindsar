@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { ARButton } from "three/addons/webxr/ARButton.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import priceEstForm from "./price/form/priceEstForm.js";
 
 // Define the global variables
 let container;
@@ -52,6 +53,8 @@ function init() {
 		ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
 	);
 
+	// document.body.appendChild(priceEstForm());
+
 	// Create a reticle and add it to the scene
 	reticle = new THREE.Mesh(
 		new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
@@ -92,143 +95,44 @@ function init() {
 	scene.add(distanceTextSprite);
 
 	// Models
-
 	function loadModel(width, height, position, price) {
 		const loader = new GLTFLoader();
 
-		loader.load(
-			"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/static/models/window_blinds/scene.gltf",
-			(gltf) => {
-				const model = gltf.scene;
+		loader.load("/static/models/window_blinds/scene.gltf", (gltf) => {
+			const model = gltf.scene;
 
-				// Calculate the scale factor based on the width and height
-				const modelBoundingBox = new THREE.Box3().setFromObject(model);
-				const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
-				const scaleX = width / modelSize.x;
-				const scaleY = height / modelSize.y;
-				const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
+			// Calculate the scale factor based on the width and height
+			const modelBoundingBox = new THREE.Box3().setFromObject(model);
+			const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
+			const scaleX = width / modelSize.x;
+			const scaleY = height / modelSize.y;
+			const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
 
-				// Apply the scale to the model
-				model.scale.set(scaleX, scaleY, scaleZ);
+			// Apply the scale to the model
+			model.scale.set(scaleX, scaleY, scaleZ);
 
-				// Calculate the model's bounding box center
-				const modelCenter = new THREE.Vector3();
-				modelBoundingBox.getCenter(modelCenter);
+			// Calculate the model's bounding box center
+			const modelCenter = new THREE.Vector3();
+			modelBoundingBox.getCenter(modelCenter);
 
-				// Scale the model's center according to the applied scale
-				modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
+			// Scale the model's center according to the applied scale
+			modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
 
-				// Move the model's center to the position
-				const modelPosition = position.clone().sub(modelCenter);
-				model.position.copy(modelPosition);
+			// Move the model's center to the position
+			const modelPosition = position.clone().sub(modelCenter);
+			model.position.copy(modelPosition);
 
-				// Add the model to the scene
-				scene.add(model);
+			// Add the model to the scene
+			scene.add(model);
 
-				// Step 1: Modify the createButton function
-				function createButton() {
-					const button = document.createElement("button");
-					button.textContent = "View Price";
-					button.style.fontSize = "2rem";
-					button.style.fontWeight = "bold";
-					button.style.color = "black";
-					button.style.position = "fixed";
-					button.style.bottom = "12%";
-					button.style.left = "50%";
-					button.style.transform = "translateX(-50%)";
-					button.style.padding = "5%";
-					button.style.width = "80%";
-					button.style.backgroundColor = "white";
-
-					button.addEventListener("click", () => {
-						createForm();
-						createButton.remove();
-					});
-
-					document.body.appendChild(button);
-				}
-
-				// Step 2: Create form element and set its properties
-				function createForm() {
-					const form = document.createElement("form");
-					form.style.position = "fixed";
-					form.style.width = "100vw";
-					form.style.height = "100vh";
-					form.style.display = "flex";
-					form.style.flexDirection = "column";
-					form.style.alignItems = "center";
-					form.style.justifyContent = "center";
-					form.style.gap = "10px";
-					form.style.backgroundColor = "white";
-
-					// Step 3: Create input elements for the name and email fields
-					const nameInput = document.createElement("input");
-					nameInput.type = "text";
-					nameInput.placeholder = "Name";
-					nameInput.required = false;
-					nameInput.style.width = "80%";
-					nameInput.style.padding = "5%";
-					nameInput.style.fontSize = "2em";
-
-					const emailInput = document.createElement("input");
-					emailInput.type = "email";
-					emailInput.placeholder = "Email";
-					emailInput.required = false;
-					emailInput.style.width = "80%";
-					emailInput.style.padding = "5%";
-					emailInput.style.fontSize = "2em";
-
-					// Step 4: Create a submit button for the form
-					const submitButton = document.createElement("button");
-					submitButton.type = "submit";
-					submitButton.textContent = "Submit";
-					submitButton.style.color = "white";
-					submitButton.style.width = "80%";
-					submitButton.style.padding = "5%";
-					submitButton.style.fontSize = "2em";
-					submitButton.style.backgroundColor = "black";
-
-					// Step 5: Add event listeners to the input fields and the submit button (optional)
-					// For example, you can add validation checks and form submission handling here
-
-					// Step 6: Append the input fields and the submit button to the form element
-					form.appendChild(nameInput);
-					form.appendChild(emailInput);
-					form.appendChild(submitButton);
-
-					// Step 7: Append the form to the document body or another desired container element
-					document.body.appendChild(form);
-
-					// Step 8: Add a click event listener to the submit button
-					form.addEventListener("submit", (event) => {
-						event.preventDefault(); // Prevent default form submission behavior
-
-						// Remove the input fields and submit button
-						nameInput.remove();
-						emailInput.remove();
-						submitButton.remove();
-
-						// Display the price in the center of the form
-						const number = document.createElement("p");
-						number.textContent = `€${price}`;
-						number.style.fontSize = "54px";
-						number.style.color = "black";
-						number.style.textAlign = "center";
-						form.appendChild(number);
-					});
-				}
-
-				// Call the createButton function
-				createButton();
-			}
-		);
+			// Add form here:
+			document.body.appendChild(priceEstForm(price));
+		});
 	}
 
 	async function fetchPrice(roundedWidth, roundedHeight) {
 		try {
-			const response = await fetch(
-				"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/price.json"
-			);
+			const response = await fetch("/data/price.json");
 			const priceData = await response.json();
 
 			const widthKey = roundedWidth.toString();
