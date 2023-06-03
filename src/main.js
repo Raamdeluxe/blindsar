@@ -53,8 +53,6 @@ function init() {
 		ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
 	);
 
-	// document.body.appendChild(priceEstForm());
-
 	// Create a reticle and add it to the scene
 	reticle = new THREE.Mesh(
 		new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),

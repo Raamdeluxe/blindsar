@@ -10,9 +10,12 @@
 		"deploy": "gh-pages -d dist"
 	},
 	"devDependencies": {
+		"firebase-tools": "^12.2.1",
 		"vite": "^4.2.0"
 	},
 	"dependencies": {
+		"@firebase/firestore": "^3.12.1",
+		"firebase": "^9.22.1",
 		"gh-pages": "^5.0.0",
 		"three": "^0.151.3"
 	}

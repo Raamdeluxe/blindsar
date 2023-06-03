@@ -1,4 +1,6 @@
 import "./priceEstForm.css";
+import { colRef } from "../../../firebase.js";
+import { addDoc } from "@firebase/firestore";
 
 // Create priceForm element and set its properties
 function priceEstForm(price) {
@@ -18,11 +20,13 @@ function priceEstForm(price) {
 		// Input elements for the name and email fields
 		const nameInput = document.createElement("input");
 		nameInput.type = "text";
+		nameInput.name = "name";
 		nameInput.placeholder = "Name";
 		nameInput.required = false;
 
 		const emailInput = document.createElement("input");
 		emailInput.type = "email";
+		emailInput.name = "email";
 		emailInput.placeholder = "Email";
 		emailInput.required = false;
 
@@ -37,25 +41,27 @@ function priceEstForm(price) {
 		priceForm.appendChild(emailInput);
 		priceForm.appendChild(submitButton);
 
-		// Add a click event listener to the submit button
+		// Add a submit event listener to the form
 		priceForm.addEventListener("submit", (event) => {
 			event.preventDefault(); // Prevent default form submission behavior
 			const formData = new FormData(priceForm); // Create a new FormData object
 			const name = formData.get("name"); // Get the name value from the form
 			const email = formData.get("email"); // Get the email value from the form
 
-			localStorage.setItem("name", name); // Store the name value in localStorage
-			localStorage.setItem("email", email); // Store the email value in localStorage
+			// Add the form data to Firestore
+			addDoc(colRef, {
+				name: name,
+				email: email,
+				price: price,
+			})
+				.then(() => {
+					console.log("Form data stored in Firestore");
+				})
+				.catch((error) => {
+					console.error("Error storing form data: ", error);
+				});
 
 			priceForm.remove(); // Remove the form from the DOM
-
-			// Display the price in the center of the form
-			const number = document.createElement("p");
-			number.classList.add("price-display"); // Add the class to the paragraph
-			number.textContent = `€${price}`;
-
-			// Append the price to the container
-			container.appendChild(number);
 		});
 
 		// Append the form to the container
