@@ -14,6 +14,8 @@ let hitTestSourceRequested = false;
 let dotPositions = [];
 let width = 0;
 let height = 0;
+let hitDots = [];
+let lines = [];
 
 // Call the initialization and animation functions
 init();
@@ -70,27 +72,27 @@ function init() {
 	reticle.add(dot);
 
 	// Function to create a text sprite
-	function createTextSprite(message, fontColor) {
-		const canvas = document.createElement("canvas");
-		const context = canvas.getContext("2d");
-		context.font = "bold 20px Arial"; // Change the font size here
-		context.fillStyle = fontColor;
-		context.fillText(message, 0, 20);
+	// function createTextSprite(message, fontColor) {
+	// 	const canvas = document.createElement("canvas");
+	// 	const context = canvas.getContext("2d");
+	// 	context.font = "bold 20px Arial"; // Change the font size here
+	// 	context.fillStyle = fontColor;
+	// 	context.fillText(message, 0, 20);
 
-		const texture = new THREE.CanvasTexture(canvas);
-		const spriteMaterial = new THREE.SpriteMaterial({
-			map: texture,
-			transparent: true,
-		});
-		const sprite = new THREE.Sprite(spriteMaterial);
-		sprite.scale.set(0.01 * canvas.width, 0.01 * canvas.height, 1);
+	// 	const texture = new THREE.CanvasTexture(canvas);
+	// 	const spriteMaterial = new THREE.SpriteMaterial({
+	// 		map: texture,
+	// 		transparent: true,
+	// 	});
+	// 	const sprite = new THREE.Sprite(spriteMaterial);
+	// 	sprite.scale.set(0.01 * canvas.width, 0.01 * canvas.height, 1);
 
-		return sprite;
-	}
+	// 	return sprite;
+	// }
 
 	// Create a text sprite for the distance and add it to the scene
-	const distanceTextSprite = createTextSprite("", "white");
-	scene.add(distanceTextSprite);
+	// const distanceTextSprite = createTextSprite("", "white");
+	// scene.add(distanceTextSprite);
 
 	// Models
 	function loadModel(width, height, position, price) {
@@ -164,94 +166,104 @@ function init() {
 	}
 
 	function onSelect() {
-		if (reticle.visible) {
-			const hitDot = new THREE.Mesh(dotGeometry, dotMaterial);
-			reticle.matrix.decompose(
-				hitDot.position,
-				hitDot.quaternion,
-				hitDot.scale
-			);
-			scene.add(hitDot);
-
-			dotPositions.push(hitDot.position.clone());
-
-			let distance = 0;
-
-			if (dotPositions.length >= 2) {
-				// Create the line
-				const lineGeometry = new THREE.BufferGeometry().setFromPoints(
-					dotPositions
+		if (dotPositions.length < 3) {
+			if (reticle.visible) {
+				const hitDot = new THREE.Mesh(dotGeometry, dotMaterial);
+				reticle.matrix.decompose(
+					hitDot.position,
+					hitDot.quaternion,
+					hitDot.scale
 				);
-				const lineMaterial = new THREE.LineBasicMaterial({
-					color: 0xffffff,
-					linewidth: 5,
-					linecap: "round",
-				});
-				const line = new THREE.Line(lineGeometry, lineMaterial);
-				scene.add(line);
+				scene.add(hitDot);
 
-				distance = dotPositions[dotPositions.length - 2].distanceTo(
-					dotPositions[dotPositions.length - 1]
-				);
+				// Add the hitDot to the hitDots array
+				hitDots.push(hitDot);
 
-				// Calculate the distance in centimeters
-				const distanceCM = (distance * 100).toFixed(2);
+				dotPositions.push(hitDot.position.clone());
 
-				// Round the distance upwards in tens
-				const roundedDistanceCM = Math.ceil(distanceCM / 10) * 10;
+				let distance = 0;
 
-				// Update the text sprite content
-				scene.remove(distanceTextSprite);
-				distanceTextSprite.material.map.dispose();
-				distanceTextSprite.material.dispose();
-				const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
-				newTextSprite.position
-					.copy(dotPositions[dotPositions.length - 1])
-					.add(new THREE.Vector3(0.05, 0.05, 0));
+				if (dotPositions.length >= 2) {
+					// Create the line
+					const lineGeometry = new THREE.BufferGeometry().setFromPoints(
+						dotPositions
+					);
+					const lineMaterial = new THREE.LineBasicMaterial({
+						color: 0xffffff,
+						linewidth: 5,
+						linecap: "round",
+					});
+					const line = new THREE.Line(lineGeometry, lineMaterial);
+					scene.add(line);
 
-				// Scale the text sprite based on the distance from the camera
-				const cameraDistance = camera.position.distanceTo(
-					newTextSprite.position
-				);
-				const scale = 0.001 * cameraDistance;
-				newTextSprite.scale.set(
-					scale * newTextSprite.material.map.image.width,
-					scale * newTextSprite.material.map.image.height,
-					1
-				);
+					// Add the line to the lines array
+					lines.push(line);
 
-				if (dotPositions.length % 2 == 0) {
-					width = distance;
-				} else {
-					height = distance;
+					distance = dotPositions[dotPositions.length - 2].distanceTo(
+						dotPositions[dotPositions.length - 1]
+					);
+
+					// Calculate the distance in centimeters
+					const distanceCM = (distance * 100).toFixed(2);
+
+					// Round the distance upwards in tens
+					const roundedDistanceCM = Math.ceil(distanceCM / 10) * 10;
+
+					// Update the text sprite content
+					// scene.remove(distanceTextSprite);
+					// distanceTextSprite.material.map.dispose();
+					// distanceTextSprite.material.dispose();
+					// const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
+					// newTextSprite.position
+					//  .copy(dotPositions[dotPositions.length - 1])
+					//  .add(new THREE.Vector3(0.05, 0.05, 0));
+
+					// Scale the text sprite based on the distance from the camera
+					// const cameraDistance = camera.position.distanceTo(
+					//  newTextSprite.position
+					// );
+					// const scale = 0.001 * cameraDistance;
+					// newTextSprite.scale.set(
+					//  scale * newTextSprite.material.map.image.width,
+					//  scale * newTextSprite.material.map.image.height,
+					//  1
+					// );
+
+					if (dotPositions.length % 2 == 0) {
+						width = distance;
+					} else {
+						height = distance;
+					}
+
+					if (width !== 0 && height !== 0) {
+						const areaM2 = (width * height).toFixed(2);
+						console.log(`Area: ${areaM2} m²`);
+
+						// Round the width and height upwards in tens
+						const roundedWidthCM = Math.ceil((width * 100) / 10) * 10;
+						const roundedHeightCM = Math.ceil((height * 100) / 10) * 10;
+
+						// Fetch the price
+						fetchPrice(roundedWidthCM, roundedHeightCM);
+					}
+
+					// scene.add(newTextSprite);
+
+					// Log the rounded distance in centimeters
+					console.log(roundedDistanceCM);
 				}
-				if (width !== 0 && height !== 0) {
-					const areaM2 = (width * height).toFixed(2);
-					console.log(`Area: ${areaM2} m²`);
 
-					// Round the width and height upwards in tens
-					const roundedWidthCM = Math.ceil((width * 100) / 10) * 10;
-					const roundedHeightCM = Math.ceil((height * 100) / 10) * 10;
+				// If three dots are placed, hide the reticle
+				if (dotPositions.length === 3) {
+					//// Two distances measured (width and height)
+					// const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
+					// const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
 
-					// Fetch the price
-					fetchPrice(roundedWidthCM, roundedHeightCM);
+					// const modelPosition = new THREE.Vector3()
+					// 	.addVectors(dotPositions[0], dotPositions[2])
+					// 	.multiplyScalar(0.5);
+					reticle.visible = false;
 				}
-
-				scene.add(newTextSprite);
-
-				// Log the rounded distance in centimeters
-				console.log(roundedDistanceCM);
-			}
-
-			// Remove the duplicate call to 'loadModel' as it's already being called inside 'fetchPrice'
-			if (dotPositions.length === 3) {
-				// Two distances measured (width and height)
-				const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
-				const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
-
-				const modelPosition = new THREE.Vector3()
-					.addVectors(dotPositions[0], dotPositions[2])
-					.multiplyScalar(0.5);
 			}
 		}
 	}
@@ -305,14 +317,14 @@ function render(timestamp, frame) {
 			// If hit test source exists
 			const hitTestResults = frame.getHitTestResults(hitTestSource); // Get hit test results
 
-			if (hitTestResults.length) {
-				// If there are hit test results
+			if (hitTestResults.length && dotPositions.length < 3) {
+				// If there are hit test results and fewer than three dots have been placed
 				const hit = hitTestResults[0]; // Get the first hit
 
 				reticle.visible = true; // Set the reticle to visible
 				reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix); // Set the position of the reticle to the hit location
 			} else {
-				reticle.visible = false; // Set the reticle to invisible if there are no hit test results
+				reticle.visible = false; // Set the reticle to invisible if there are no hit test results or three dots have been placed
 			}
 		}
 	}

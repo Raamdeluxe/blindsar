@@ -64,6 +64,30 @@ function priceEstForm(price) {
 			priceForm.remove(); // Remove the form from the DOM
 		});
 
+		// Create a div to wrap the buttons
+		const buttonsWrapper = document.createElement("div");
+		buttonsWrapper.classList.add("buttons-wrapper");
+
+		// Append the submit button to the wrapper
+		buttonsWrapper.appendChild(submitButton);
+
+		// Create a return button under the form
+		const returnButton = document.createElement("button");
+		returnButton.classList.add("price-form-return-button");
+		returnButton.textContent = "Return";
+
+		// Add a click event listener to the return button
+		returnButton.addEventListener("click", () => {
+			priceForm.remove(); // Remove the form from the DOM
+			container.appendChild(priceButton); // Append the price button to the container
+		});
+
+		// Append the return button to the wrapper
+		buttonsWrapper.appendChild(returnButton);
+
+		// Append the wrapper to the form
+		priceForm.appendChild(buttonsWrapper);
+
 		// Append the form to the container
 		container.appendChild(priceForm);
 	});
