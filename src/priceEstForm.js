@@ -1,5 +1,5 @@
 import "./priceEstForm.css";
-import { colRef } from "../../../firebase.js";
+import { colRef } from "../firebase.js";
 import { addDoc } from "@firebase/firestore";
 
 // Create priceForm element and set its properties

@@ -1,8 +1,8 @@
 // Import the necessary modules
 import * as THREE from "three";
-import { ARButton } from "three/addons/webxr/ARButton.js";
+import { ARButton } from "./ARButton.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import priceEstForm from "./price/form/priceEstForm.js";
+import priceEstForm from "./priceEstForm.js";
 
 // Define the global variables
 let container;
@@ -16,10 +16,270 @@ let width = 0;
 let height = 0;
 let hitDots = [];
 let lines = [];
+let model = null;
+let priceContainer = null;
+let arButton;
+
+// Create the reset button
+const resetButton = document.createElement("button");
+resetButton.textContent = "Reset";
+resetButton.style.position = "absolute";
+resetButton.style.top = "10px";
+resetButton.style.right = "10px";
+resetButton.style.display = "none"; // Initially hidden
+
+// Apply inline styling
+resetButton.style.width = "30%";
+resetButton.style.padding = "15px";
+resetButton.style.fontSize = "18px";
+resetButton.style.fontWeight = "bold";
+resetButton.style.backgroundColor = "gray";
+resetButton.style.border = "1px solid black";
+resetButton.style.color = "white";
+
+document.body.appendChild(resetButton);
+
+// Create the dot geometry and material
+const dotGeometry = new THREE.SphereGeometry(0.005, 16, 16);
+const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+// Models
+function loadModel(width, height, position, price) {
+	const loader = new GLTFLoader();
+
+	loader.load(
+		"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/static/models/window_blinds/scene.gltf",
+		(gltf) => {
+			model = gltf.scene;
+
+			// Calculate the scale factor based on the width and height
+			const modelBoundingBox = new THREE.Box3().setFromObject(model);
+			const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
+			const scaleX = width / modelSize.x;
+			const scaleY = height / modelSize.y;
+			const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
+
+			// Apply the scale to the model
+			model.scale.set(scaleX, scaleY, scaleZ);
+
+			// Calculate the model's bounding box center
+			const modelCenter = new THREE.Vector3();
+			modelBoundingBox.getCenter(modelCenter);
+
+			// Scale the model's center according to the applied scale
+			modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
+
+			// Move the model's center to the position
+			const modelPosition = position.clone().sub(modelCenter);
+			model.position.copy(modelPosition);
+
+			// Add the model to the scene
+			scene.add(model);
+
+			priceContainer = priceEstForm(price);
+			document.body.appendChild(priceContainer);
+		}
+	);
+}
+
+async function fetchPrice(roundedWidth, roundedHeight) {
+	try {
+		const response = await fetch(
+			"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/data/price.json"
+		);
+		const priceData = await response.json();
+
+		const widthKey = roundedWidth.toString();
+		const heightKey = roundedHeight.toString();
+
+		if (priceData[widthKey] && priceData[widthKey][heightKey]) {
+			const price = priceData[widthKey][heightKey];
+			console.log(`Price: €${price}`);
+			// Call loadModel with the price
+			if (dotPositions.length === 3) {
+				// Two distances measured (width and height)
+				const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
+				const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
+
+				const modelPosition = new THREE.Vector3()
+					.addVectors(dotPositions[0], dotPositions[2])
+					.multiplyScalar(0.5);
+				loadModel(width, height, modelPosition, price);
+			}
+		} else {
+			console.log("Width or height not found in the price data");
+		}
+	} catch (error) {
+		console.error("Error fetching price data:", error);
+	}
+}
+
+// Helper function to remove objects from the scene and clear the array
+function clearObjects(array) {
+	for (const object of array) {
+		scene.remove(object);
+	}
+	array.length = 0; // Clear the array
+}
+
+// Step 2: Add an event listener to the reset button
+resetButton.addEventListener("click", resetSession);
+
+// Step 3: Define the reset function
+function resetSession() {
+	// Clear the dotPositions array
+	dotPositions.length = 0;
+
+	// Remove the dots and lines from the scene
+	clearObjects(hitDots);
+	clearObjects(lines);
+
+	// Remove the model from the scene
+	if (model) {
+		scene.remove(model);
+		model = null;
+	}
+
+	// Remove the price container
+	if (priceContainer) {
+		document.body.removeChild(priceContainer);
+		priceContainer = null;
+	}
+
+	// Recreate the AR button
+	if (arButton) {
+		document.body.removeChild(arButton);
+		arButton = ARButton.createButton(renderer, {
+			requiredFeatures: ["hit-test"],
+		});
+		document.body.appendChild(arButton);
+	}
+
+	// End the AR session
+	if (renderer.xr.getSession()) {
+		renderer.xr.getSession().end();
+	}
+
+	// Make the reticle visible again and hide the reset button
+	reticle.visible = true;
+	resetButton.style.display = "none";
+}
+
+function onSelect() {
+	if (dotPositions.length < 3) {
+		if (reticle.visible) {
+			const hitDot = new THREE.Mesh(dotGeometry, dotMaterial);
+			reticle.matrix.decompose(
+				hitDot.position,
+				hitDot.quaternion,
+				hitDot.scale
+			);
+			scene.add(hitDot);
+
+			// Add the hitDot to the hitDots array
+			hitDots.push(hitDot);
+
+			dotPositions.push(hitDot.position.clone());
+
+			let distance = 0;
+
+			if (dotPositions.length >= 2) {
+				// Create the line
+				const lineGeometry = new THREE.BufferGeometry().setFromPoints(
+					dotPositions
+				);
+				const lineMaterial = new THREE.LineBasicMaterial({
+					color: 0xffffff,
+					linewidth: 5,
+					linecap: "round",
+				});
+				const line = new THREE.Line(lineGeometry, lineMaterial);
+				scene.add(line);
+
+				// Add the line to the lines array
+				lines.push(line);
+
+				distance = dotPositions[dotPositions.length - 2].distanceTo(
+					dotPositions[dotPositions.length - 1]
+				);
+
+				// Calculate the distance in centimeters
+				const distanceCM = (distance * 100).toFixed(2);
+
+				// Round the distance upwards in tens
+				const roundedDistanceCM = Math.ceil(distanceCM / 10) * 10;
+
+				// Update the text sprite content
+				// scene.remove(distanceTextSprite);
+				// distanceTextSprite.material.map.dispose();
+				// distanceTextSprite.material.dispose();
+				// const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
+				// newTextSprite.position
+				//  .copy(dotPositions[dotPositions.length - 1])
+				//  .add(new THREE.Vector3(0.05, 0.05, 0));
+
+				// Scale the text sprite based on the distance from the camera
+				// const cameraDistance = camera.position.distanceTo(
+				//  newTextSprite.position
+				// );
+				// const scale = 0.001 * cameraDistance;
+				// newTextSprite.scale.set(
+				//  scale * newTextSprite.material.map.image.width,
+				//  scale * newTextSprite.material.map.image.height,
+				//  1
+				// );
+
+				if (dotPositions.length % 2 == 0) {
+					width = distance;
+				} else {
+					height = distance;
+				}
+
+				if (width !== 0 && height !== 0) {
+					const areaM2 = (width * height).toFixed(2);
+					console.log(`Area: ${areaM2} m²`);
+
+					// Round the width and height upwards in tens
+					const roundedWidthCM = Math.ceil((width * 100) / 10) * 10;
+					const roundedHeightCM = Math.ceil((height * 100) / 10) * 10;
+
+					// Fetch the price
+					fetchPrice(roundedWidthCM, roundedHeightCM);
+				}
+
+				// scene.add(newTextSprite);
+
+				// Log the rounded distance in centimeters
+				console.log(roundedDistanceCM);
+			}
+
+			// If three dots are placed, hide the reticle
+			if (dotPositions.length === 3) {
+				//// Two distances measured (width and height)
+				// const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
+				// const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
+
+				// const modelPosition = new THREE.Vector3()
+				// 	.addVectors(dotPositions[0], dotPositions[2])
+				// 	.multiplyScalar(0.5);
+				reticle.visible = false;
+				resetButton.style.display = "block"; // Show the reset button
+			}
+		}
+	}
+}
+
+// Define the onWindowResize() function
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 // Call the initialization and animation functions
 init();
-animate();
+renderer.setAnimationLoop(render); // Continuously render the scene
 
 // Define the init() function
 function init() {
@@ -51,9 +311,10 @@ function init() {
 	container.appendChild(renderer.domElement);
 
 	// Add the ARButton to the DOM
-	document.body.appendChild(
-		ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
-	);
+	arButton = ARButton.createButton(renderer, {
+		requiredFeatures: ["hit-test"],
+	});
+	document.body.appendChild(arButton);
 
 	// Create a reticle and add it to the scene
 	reticle = new THREE.Mesh(
@@ -94,198 +355,12 @@ function init() {
 	// const distanceTextSprite = createTextSprite("", "white");
 	// scene.add(distanceTextSprite);
 
-	// Models
-	function loadModel(width, height, position, price) {
-		const loader = new GLTFLoader();
-
-		loader.load(
-			"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/static/models/window_blinds/scene.gltf",
-			(gltf) => {
-				const model = gltf.scene;
-
-				// Calculate the scale factor based on the width and height
-				const modelBoundingBox = new THREE.Box3().setFromObject(model);
-				const modelSize = modelBoundingBox.getSize(new THREE.Vector3());
-				const scaleX = width / modelSize.x;
-				const scaleY = height / modelSize.y;
-				const scaleZ = Math.min(scaleX, scaleY); // Use the minimum scale to maintain aspect ratio
-
-				// Apply the scale to the model
-				model.scale.set(scaleX, scaleY, scaleZ);
-
-				// Calculate the model's bounding box center
-				const modelCenter = new THREE.Vector3();
-				modelBoundingBox.getCenter(modelCenter);
-
-				// Scale the model's center according to the applied scale
-				modelCenter.multiply(new THREE.Vector3(scaleX, scaleY, scaleZ));
-
-				// Move the model's center to the position
-				const modelPosition = position.clone().sub(modelCenter);
-				model.position.copy(modelPosition);
-
-				// Add the model to the scene
-				scene.add(model);
-
-				// Add form here:
-				document.body.appendChild(priceEstForm(price));
-			}
-		);
-	}
-
-	async function fetchPrice(roundedWidth, roundedHeight) {
-		try {
-			const response = await fetch(
-				"https://raw.githubusercontent.com/Raamdeluxe/blindsar/main/data/price.json"
-			);
-			const priceData = await response.json();
-
-			const widthKey = roundedWidth.toString();
-			const heightKey = roundedHeight.toString();
-
-			if (priceData[widthKey] && priceData[widthKey][heightKey]) {
-				const price = priceData[widthKey][heightKey];
-				console.log(`Price: €${price}`);
-				// Call loadModel with the price
-				if (dotPositions.length === 3) {
-					// Two distances measured (width and height)
-					const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
-					const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
-
-					const modelPosition = new THREE.Vector3()
-						.addVectors(dotPositions[0], dotPositions[2])
-						.multiplyScalar(0.5);
-					loadModel(width, height, modelPosition, price);
-				}
-			} else {
-				console.log("Width or height not found in the price data");
-			}
-		} catch (error) {
-			console.error("Error fetching price data:", error);
-		}
-	}
-
-	function onSelect() {
-		if (dotPositions.length < 3) {
-			if (reticle.visible) {
-				const hitDot = new THREE.Mesh(dotGeometry, dotMaterial);
-				reticle.matrix.decompose(
-					hitDot.position,
-					hitDot.quaternion,
-					hitDot.scale
-				);
-				scene.add(hitDot);
-
-				// Add the hitDot to the hitDots array
-				hitDots.push(hitDot);
-
-				dotPositions.push(hitDot.position.clone());
-
-				let distance = 0;
-
-				if (dotPositions.length >= 2) {
-					// Create the line
-					const lineGeometry = new THREE.BufferGeometry().setFromPoints(
-						dotPositions
-					);
-					const lineMaterial = new THREE.LineBasicMaterial({
-						color: 0xffffff,
-						linewidth: 5,
-						linecap: "round",
-					});
-					const line = new THREE.Line(lineGeometry, lineMaterial);
-					scene.add(line);
-
-					// Add the line to the lines array
-					lines.push(line);
-
-					distance = dotPositions[dotPositions.length - 2].distanceTo(
-						dotPositions[dotPositions.length - 1]
-					);
-
-					// Calculate the distance in centimeters
-					const distanceCM = (distance * 100).toFixed(2);
-
-					// Round the distance upwards in tens
-					const roundedDistanceCM = Math.ceil(distanceCM / 10) * 10;
-
-					// Update the text sprite content
-					// scene.remove(distanceTextSprite);
-					// distanceTextSprite.material.map.dispose();
-					// distanceTextSprite.material.dispose();
-					// const newTextSprite = createTextSprite(`${distanceCM} cm`, "white");
-					// newTextSprite.position
-					//  .copy(dotPositions[dotPositions.length - 1])
-					//  .add(new THREE.Vector3(0.05, 0.05, 0));
-
-					// Scale the text sprite based on the distance from the camera
-					// const cameraDistance = camera.position.distanceTo(
-					//  newTextSprite.position
-					// );
-					// const scale = 0.001 * cameraDistance;
-					// newTextSprite.scale.set(
-					//  scale * newTextSprite.material.map.image.width,
-					//  scale * newTextSprite.material.map.image.height,
-					//  1
-					// );
-
-					if (dotPositions.length % 2 == 0) {
-						width = distance;
-					} else {
-						height = distance;
-					}
-
-					if (width !== 0 && height !== 0) {
-						const areaM2 = (width * height).toFixed(2);
-						console.log(`Area: ${areaM2} m²`);
-
-						// Round the width and height upwards in tens
-						const roundedWidthCM = Math.ceil((width * 100) / 10) * 10;
-						const roundedHeightCM = Math.ceil((height * 100) / 10) * 10;
-
-						// Fetch the price
-						fetchPrice(roundedWidthCM, roundedHeightCM);
-					}
-
-					// scene.add(newTextSprite);
-
-					// Log the rounded distance in centimeters
-					console.log(roundedDistanceCM);
-				}
-
-				// If three dots are placed, hide the reticle
-				if (dotPositions.length === 3) {
-					//// Two distances measured (width and height)
-					// const width = dotPositions[0].distanceTo(dotPositions[1]); // Convert to cm
-					// const height = dotPositions[1].distanceTo(dotPositions[2]); // Convert to cm
-
-					// const modelPosition = new THREE.Vector3()
-					// 	.addVectors(dotPositions[0], dotPositions[2])
-					// 	.multiplyScalar(0.5);
-					reticle.visible = false;
-				}
-			}
-		}
-	}
-
 	controller = renderer.xr.getController(0);
 	controller.addEventListener("select", onSelect);
 	scene.add(controller);
 
 	// Add an event listener for window resize
 	window.addEventListener("resize", onWindowResize);
-}
-
-// Define the onWindowResize() function
-function onWindowResize() {
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-
-	renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-function animate() {
-	renderer.setAnimationLoop(render); // Continuously render the scene
 }
 
 function render(timestamp, frame) {
