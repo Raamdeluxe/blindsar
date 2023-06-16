@@ -56,12 +56,21 @@ function priceEstForm(price) {
 			})
 				.then(() => {
 					console.log("Form data stored in Firestore");
+					const confirmation = document.createElement("p");
+					confirmation.classList.add("confirmation");
+					confirmation.textContent =
+						"Thanks for submitting! You will receive an email with your price estimate shortly.";
+					priceForm.insertBefore(confirmation, buttonsWrapper);
+
+					nameInput.remove();
+					emailInput.remove();
+					submitButton.remove();
 				})
 				.catch((error) => {
 					console.error("Error storing form data: ", error);
 				});
 
-			priceForm.remove(); // Remove the form from the DOM
+			// priceForm.remove(); // Remove the form from the DOM
 		});
 
 		// Create a div to wrap the buttons
