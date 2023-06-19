@@ -1,0 +1,137 @@
+@font-face {
+	font-family: "Poppins";
+	src: url("./assets/fonts/Poppins/Poppins-Regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Poppins";
+	src: url("./assets/fonts/Poppins/Poppins-Bold.ttf") format("truetype");
+	font-weight: 700;
+	font-style: normal;
+}
+
+html,
+body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	font-family: "Poppins", sans-serif;
+}
+
+.desktop-nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px;
+	margin-left: 5%;
+	margin-right: 5%;
+	position: relative;
+}
+
+.desktop-nav a {
+	text-decoration: none;
+	font-family: "Poppins";
+	color: black;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 18px;
+	line-height: 27px;
+}
+
+.logo img {
+	width: 230px;
+	height: 52px;
+}
+
+.desktop-menu {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 35%;
+}
+
+.mobile-menu {
+	display: none;
+	overflow: hidden;
+}
+
+.nav-links-mobile {
+	background-color: #fff;
+	padding: 10px;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transform: translateY(-100%);
+	transition: transform 0.3s ease-out, max-height 0.3s ease-out;
+	max-height: auto; /* Add this */
+}
+
+.nav-links-mobile a {
+	margin-bottom: 10px;
+	font-family: "Poppins";
+	color: black;
+	font-style: normal;
+	font-weight: 700;
+	font-size: 18px;
+	text-decoration: none;
+}
+
+.hamburger {
+	display: none;
+}
+
+.hamburger .close-icon {
+	display: none;
+}
+
+.hamburger .menu-icon {
+	display: none;
+}
+
+/* Media query for screens with width up to 800px */
+@media (max-width: 800px) {
+	.desktop-menu,
+	.cart {
+		display: none;
+	}
+
+	.mobile-menu {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.nav-links-mobile {
+		display: flex;
+		width: 100%;
+	}
+
+	.hamburger {
+		display: block;
+		cursor: pointer;
+	}
+
+	.hamburger .close-icon {
+		display: none;
+	}
+
+	.hamburger .menu-icon {
+		display: block;
+	}
+
+	.hamburger.active .close-icon {
+		display: block;
+	}
+
+	.hamburger.active .menu-icon {
+		display: none;
+	}
+
+	.mobile-menu.active .nav-links-mobile {
+		transform: translateY(0);
+		max-height: 500px; /* Add this */
+	}
+}
