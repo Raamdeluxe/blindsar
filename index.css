@@ -17,7 +17,7 @@ body {
 	height: 100%;
 	width: 100%;
 	margin: 0;
-	font-family: "Poppins", sans-serif;
+	font: normal 400 100%/1 "Poppins", sans-serif;
 }
 
 .desktop-nav {
@@ -25,19 +25,15 @@ body {
 	align-items: center;
 	justify-content: space-between;
 	padding: 20px;
-	margin-left: 5%;
-	margin-right: 5%;
+	margin: 0 5%;
 	position: relative;
 }
 
-.desktop-nav a {
+.desktop-nav a,
+.nav-links-mobile a {
 	text-decoration: none;
-	font-family: "Poppins";
+	font: normal 700 18px/27px "Poppins", sans-serif;
 	color: black;
-	font-style: normal;
-	font-weight: 700;
-	font-size: 18px;
-	line-height: 27px;
 }
 
 .logo img {
@@ -66,32 +62,20 @@ body {
 	align-items: center;
 	transform: translateY(-100%);
 	transition: transform 0.3s ease-out, max-height 0.3s ease-out;
-	max-height: auto; /* Add this */
-}
-
-.nav-links-mobile a {
-	margin-bottom: 10px;
-	font-family: "Poppins";
-	color: black;
-	font-style: normal;
-	font-weight: 700;
-	font-size: 18px;
-	text-decoration: none;
+	max-height: 0;
+	overflow: hidden;
 }
 
 .hamburger {
 	display: none;
+	cursor: pointer;
 }
 
-.hamburger .close-icon {
-	display: none;
-}
-
+.hamburger .close-icon,
 .hamburger .menu-icon {
 	display: none;
 }
 
-/* Media query for screens with width up to 800px */
 @media (max-width: 800px) {
 	.desktop-menu,
 	.cart {
@@ -105,13 +89,12 @@ body {
 	}
 
 	.nav-links-mobile {
-		display: flex;
+		flex-direction: column;
 		width: 100%;
 	}
 
 	.hamburger {
 		display: block;
-		cursor: pointer;
 	}
 
 	.hamburger .close-icon {
@@ -132,6 +115,93 @@ body {
 
 	.mobile-menu.active .nav-links-mobile {
 		transform: translateY(0);
-		max-height: 500px; /* Add this */
+		max-height: 500px;
+	}
+}
+
+.top-section {
+	display: flex;
+	gap: 30px;
+	padding: 20px;
+	justify-content: space-between;
+	margin: 0 5%;
+	max-width: 1440px;
+	flex-wrap: wrap;
+}
+
+.top-section-content01,
+.top-section-content02 {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 30px;
+	max-width: 600px;
+	width: 100%;
+}
+
+.text-container h1 {
+	font: normal 700 35px/1 "Poppins", sans-serif;
+	margin: 0;
+}
+
+.text-container p {
+	font: normal 400 15px/1 "Poppins", sans-serif;
+	color: #969696;
+}
+
+.video-container {
+	width: 100%;
+}
+
+.instruction-video {
+	padding-top: 60%;
+	background: url("./assets/instruction_video.png") no-repeat center/cover;
+	border-radius: 20px;
+}
+
+.top-section-buttons {
+	display: flex;
+	min-height: 50px;
+	width: 100%;
+	gap: 30px;
+}
+
+.shop-button,
+.explore-button {
+	align-items: center;
+	width: 100%;
+	border: 2px solid #b2a565;
+	border-radius: 10px;
+	font: normal 700 15px/27px "Poppins", sans-serif;
+}
+
+.shop-button {
+	background-color: #b2a565;
+	color: #ffffff;
+}
+
+.explore-button {
+	background-color: white;
+	color: #000000;
+}
+
+.container-hero-image {
+	height: 100%;
+	width: 100%;
+}
+
+.hero-image {
+	background: url("./assets/hero_image.png") no-repeat center/cover;
+	width: 100%;
+	height: 100%;
+	border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+	.top-section {
+		flex-direction: column; /* On mobile devices, stack items vertically */
+	}
+	.hero-image {
+		height: 300px; /* adjust this value according to your needs */
 	}
 }
