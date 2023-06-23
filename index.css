@@ -20,6 +20,8 @@ body {
 	font: normal 400 100%/1 "Poppins", sans-serif;
 }
 
+/* nav */
+
 .desktop-nav {
 	display: flex;
 	align-items: center;
@@ -118,6 +120,8 @@ body {
 		max-height: 500px;
 	}
 }
+
+/* top-section */
 
 .top-section {
 	display: flex;
